@@ -3,44 +3,51 @@ using api.BLL;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1️⃣ Connection string
+// 🔹 Connection string
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-                       ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+    ?? throw new InvalidOperationException("Connection string not found");
 
-// 2️⃣ Register SqlHelper (VERY IMPORTANT)
-builder.Services.AddSingleton<SqlHelper>(sp => new SqlHelper(connectionString));
+// 🔹 SqlHelper
+builder.Services.AddSingleton(new SqlHelper(connectionString));
 
-// 3️⃣ Register BLL services
+// 🔹 BLLs
 builder.Services.AddScoped<UserLoginBLL>();
-builder.Services.AddScoped<ClassesBLL>();
-builder.Services.AddScoped<SectionsBLL>();
-builder.Services.AddScoped<StudentsBLL>();
 builder.Services.AddScoped<TransportBLL>();
 builder.Services.AddScoped<BusStopBLL>();
-builder.Services.AddScoped<StudentBLL>();
 
-
-
-// 4️⃣ Controllers + swagger
+// 🔹 Controllers + Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// 5️⃣ CORS
+// 🔹 SESSION (🔥 REQUIRED)
+builder.Services.AddDistributedMemoryCache();
+
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(8);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+// 🔹 CORS (for React + session)
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("AllowReact", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins("http://localhost:3000")
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
 var app = builder.Build();
 
 app.UseRouting();
-app.UseCors("AllowAll");
+app.UseCors("AllowReact");
+
+app.UseSession();      // 🔥 MUST BE HERE
 app.UseAuthorization();
 
 app.UseSwagger();

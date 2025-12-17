@@ -17,8 +17,27 @@ namespace api.Controllers
         [HttpGet("routes")]
         public IActionResult GetRoutes()
         {
-            var data = _bll.GetRoutes("2025-26");
-            return Ok(data);
+            try
+            {
+                // 🔥 GET SESSION FROM LOGIN
+                string? currentSession =
+                    HttpContext.Session.GetString("Current_Session");
+
+                if (string.IsNullOrEmpty(currentSession))
+                {
+                    return Unauthorized(new
+                    {
+                        message = "Session expired. Please login again."
+                    });
+                }
+
+                var data = _bll.GetRoutes(currentSession);
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
     }
 }

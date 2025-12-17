@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using api.BLL;
 
-namespace api.Controllers   // <<< VERY IMPORTANT
+namespace api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -15,11 +15,23 @@ namespace api.Controllers   // <<< VERY IMPORTANT
         }
 
         [HttpGet]
-        public IActionResult GetClasses([FromQuery] string? session = null)
+        public IActionResult GetClasses()
         {
             try
             {
-                var result = _classesBLL.GetClasses(session);
+                // 🔥 GET SESSION FROM LOGIN
+                string? currentSession =
+                    HttpContext.Session.GetString("Current_Session");
+
+                if (string.IsNullOrEmpty(currentSession))
+                {
+                    return Unauthorized(new
+                    {
+                        message = "Session expired. Please login again."
+                    });
+                }
+
+                var result = _classesBLL.GetClasses(currentSession);
                 return Ok(result);
             }
             catch (Exception ex)
