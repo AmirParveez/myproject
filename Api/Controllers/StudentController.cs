@@ -1,32 +1,40 @@
+using api.BLL;
+using api.Model;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
 
-[Route("api/student")]
-[ApiController]
-public class StudentController : ControllerBase
+namespace api.Controllers
 {
-    private readonly StudentBLL _bll;
-
-    public StudentController(StudentBLL bll)
+    [ApiController]
+    [Route("api/student")]
+    public class StudentController : ControllerBase
     {
-        _bll = bll;
-    }
+        private readonly StudentBLL _bll;
 
-    [HttpPost("insert")]
-    public IActionResult InsertStudent([FromForm] StudentInsertRequest req)
-    {
-        var student = req.Student;
-        var info = req.StudentInfo;
-
-        long studentId = _bll.InsertStudent(student);
-        _bll.InsertStudentInfo(studentId, info);
-
-        // TODO: Save photos if required
-
-        return Ok(new
+        public StudentController(StudentBLL bll)
         {
-            message = "Student inserted successfully",
-            studentId
-        });
+            _bll = bll;
+        }
+
+        [HttpPost("add")]
+        public IActionResult AddStudent([FromBody] AddStudentApiModel model)
+        {
+            if (model == null)
+                return BadRequest("Invalid student data");
+
+            int result = _bll.AddStudent(model);
+
+            if (result > 0)
+                return Ok(new
+                {
+                    success = true,
+                    message = "Student added successfully"
+                });
+
+            return BadRequest(new
+            {
+                success = false,
+                message = "Student insert failed"
+            });
+        }
     }
 }

@@ -1,98 +1,76 @@
-using Microsoft.Data.SqlClient;
-using System.Data;
 using api.Helpers;
+using api.Model;
+using Microsoft.Data.SqlClient;
 
-public class StudentBLL
+namespace api.BLL
 {
-    private readonly SqlHelper _sql;
-
-    public StudentBLL(SqlHelper sql)
+    public class StudentBLL
     {
-        _sql = sql;
-    }
+        private readonly SqlHelper _sql;
 
-    public long InsertStudent(StudentsModel s)
-    {
-        string query = @"
-        INSERT INTO Students
-        (
-            AdmissionNo, StudentName, DOB, Gender, SessionOfAdmission,
-            FathersName, FathersQualification, FathersJob,
-            MothersName, MothersQualification, MothersJob,
-            PresentAddress, PerminantAddress,
-            PhoneNo, MobileNo, DistrictName, City, Pincode,
-            SEmail, Saadhaarcard, Faadhaarcard, Maadhaarcard,
-            IsActive
-        )
-        VALUES
-        (
-            @AdmissionNo, @StudentName, @DOB, @Gender, @SessionOfAdmission,
-            @FathersName, @FathersQualification, @FathersJob,
-            @MothersName, @MothersQualification, @MothersJob,
-            @PresentAddress, @PerminantAddress,
-            @PhoneNo, @MobileNo, @DistrictName, @City, @Pincode,
-            @SEmail, @Saadhaarcard, @Faadhaarcard, @Maadhaarcard,
-            1
-        );
-        SELECT SCOPE_IDENTITY();";
-
-        return Convert.ToInt64(_sql.ExecuteScalar(query, new[]
+        public StudentBLL(SqlHelper sql)
         {
-            new SqlParameter("@AdmissionNo", s.AdmissionNo),
-            new SqlParameter("@StudentName", s.StudentName),
-            new SqlParameter("@DOB", (object?)s.DOB ?? DBNull.Value),
-            new SqlParameter("@Gender", s.Gender),
-            new SqlParameter("@SessionOfAdmission", s.SessionOfAdmission),
+            _sql = sql;
+        }
 
-            new SqlParameter("@FathersName", s.FathersName),
-            new SqlParameter("@FathersQualification", s.FathersQualification),
-            new SqlParameter("@FathersJob", s.FathersJob),
-
-            new SqlParameter("@MothersName", s.MothersName),
-            new SqlParameter("@MothersQualification", s.MothersQualification),
-            new SqlParameter("@MothersJob", s.MothersJob),
-
-            new SqlParameter("@PresentAddress", s.PresentAddress),
-            new SqlParameter("@PerminantAddress", s.PerminantAddress),
-
-            new SqlParameter("@PhoneNo", s.PhoneNo),
-            new SqlParameter("@MobileNo", s.MobileNo),
-            new SqlParameter("@DistrictName", s.DistrictName),
-            new SqlParameter("@City", s.City),
-            new SqlParameter("@Pincode", s.Pincode),
-
-            new SqlParameter("@SEmail", s.SEmail),
-            new SqlParameter("@Saadhaarcard", (object?)s.Saadhaarcard ?? DBNull.Value),
-            new SqlParameter("@Faadhaarcard", (object?)s.Faadhaarcard ?? DBNull.Value),
-            new SqlParameter("@Maadhaarcard", (object?)s.Maadhaarcard ?? DBNull.Value)
-        }));
-    }
-
-    public void InsertStudentInfo(long studentId, StudentInfoModel i)
-    {
-        string query = @"
-        INSERT INTO StudentInfo
-        (
-            StudentId, AdmissionNo, Current_Session, SessionID,
-            ClassID, SectionID, RollNo, BusStop, BusRoute
-        )
-        VALUES
-        (
-            @StudentId, @AdmissionNo, @Current_Session, @SessionID,
-            @ClassID, @SectionID, @RollNo, @BusStop, @BusRoute
-        )";
-
-        _sql.ExecuteNonQuery(query, new[]
+        public int AddStudent(AddStudentApiModel m)
         {
-            new SqlParameter("@StudentId", studentId),
-            new SqlParameter("@AdmissionNo", studentId), // OR student.AdmissionNo
-            new SqlParameter("@Current_Session", i.Current_Session),
-            new SqlParameter("@SessionID", i.SessionID),
-            new SqlParameter("@ClassID", i.ClassID),
-            new SqlParameter("@SectionID", i.SectionID),
-            new SqlParameter("@RollNo", i.RollNo),
-            new SqlParameter("@BusStop", i.BusStop),
-            new SqlParameter("@BusRoute", i.BusRoute)
-        });
+            SqlParameter[] p =
+            {
+                new("@StudentName", m.StudentName),
+                new("@DOB", m.DOB),
+                new("@DOA", m.DOA),
+                new("@AdmissionNo", m.AdmissionNo),
+                new("@Gender", m.Gender),
+
+                new("@DistrictID", m.DistrictID),
+                new("@DistrictName", m.DistrictName),
+                new("@Aadhaar", m.Aadhaar),
+
+                new("@StudentCatID", m.StudentCatID),
+                new("@StudentCatName", m.StudentCatName),
+
+                new("@PinNo", m.PinNo),
+                new("@PhotoPath", m.PhotoPath),
+
+                new("@ClassID", m.ClassID),
+                new("@SectionID", m.SectionID),
+                new("@Session", m.Session),
+                new("@RollNo", m.RollNo),
+
+                new("@PresentAddress", m.PresentAddress),
+                new("@PermanentAddress", m.PermanentAddress),
+
+                new("@FatherName", m.FatherName),
+                new("@MontherName", m.MontherName),
+
+                new("@MobileFather", m.MobileFather),
+                new("@MobileMother", m.MobileMother),
+                new("@LandLineNo", m.LandLineNo),
+
+                new("@FatherQualification", m.FatherQualification),
+                new("@MotherQualification", m.MotherQualification),
+
+                new("@FatherIcome", m.FatherIcome),
+                new("@MotherIcome", m.MotherIcome),
+
+                new("@FatherOccupation", m.FatherOccupation),
+                new("@MotherOccupation", m.MotherOccupation),
+
+                new("@FatherPhoto", m.FatherPhoto),
+                new("@MotherPhoto", m.MotherPhoto),
+
+                new("@Remarks", m.Remarks),
+                new("@SEmail", m.SEmail),
+                new("@AcademicNo", m.AcademicNo),
+
+                new("@GuardianName", m.GuardianName),
+                new("@GuardianPhoneNo", m.GuardianPhoneNo),
+                new("@GuardianQualification", m.GuardianQualification),
+                new("@GuardialAccupation", m.GuardialAccupation)
+            };
+
+            return _sql.ExecuteNonQuery("AddstudentAPI", p);
+        }
     }
 }

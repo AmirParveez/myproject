@@ -15,6 +15,11 @@ builder.Services.AddScoped<UserLoginBLL>();
 builder.Services.AddScoped<ClassesBLL>();
 builder.Services.AddScoped<SectionsBLL>();
 builder.Services.AddScoped<StudentsBLL>();
+builder.Services.AddScoped<TransportBLL>();
+builder.Services.AddScoped<BusStopBLL>();
+builder.Services.AddScoped<StudentBLL>();
+
+
 
 // 4️⃣ Controllers + swagger
 builder.Services.AddControllers();
