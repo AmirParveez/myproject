@@ -1,5 +1,6 @@
 using api.Helpers;
 using api.BLL;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +21,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// 🔹 SESSION (🔥 REQUIRED)
+// 🔹 SESSION
 builder.Services.AddDistributedMemoryCache();
 
 builder.Services.AddSession(options =>
@@ -30,7 +31,20 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// 🔹 CORS (for React + session)
+// 🔹 AUTHENTICATION (Cookie-based)
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/login";
+        options.AccessDeniedPath = "/access-denied";
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+        options.SlidingExpiration = true;
+    });
+
+// 🔹 AUTHORIZATION
+builder.Services.AddAuthorization();
+
+// 🔹 CORS (React + Session)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReact", policy =>
@@ -44,10 +58,13 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// 🔹 Middleware pipeline (ORDER MATTERS)
 app.UseRouting();
+
 app.UseCors("AllowReact");
 
-app.UseSession();      // 🔥 MUST BE HERE
+app.UseSession();          // 🔥 Session first
+app.UseAuthentication();   // 🔥 Required
 app.UseAuthorization();
 
 app.UseSwagger();
